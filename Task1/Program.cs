@@ -1,7 +1,7 @@
 ﻿using Task1;
 
-const string Img256 = @"Resources\CatHappy256.jpg";
-const string Img64 = @"Resources\CatHappy64.jpg";
+const string Img256 = @"Resources\Nature1024.jpg";
+const string Img64 = @"Resources\Nature64.jpg";
 
 var img256 = BitmapManager.GetImage(Img256);
 var img64 = BitmapManager.GetImage(Img64);

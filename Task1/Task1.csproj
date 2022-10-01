@@ -10,6 +10,8 @@
   <ItemGroup>
     <None Remove="Resources\CatHappy256.jpg" />
     <None Remove="Resources\CatHappy64.jpg" />
+    <None Remove="Resources\Nature1024.jpg" />
+    <None Remove="Resources\Nature64.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +28,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\CatHappy64.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Nature1024.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Nature64.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
