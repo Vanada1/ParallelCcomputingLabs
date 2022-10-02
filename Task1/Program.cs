@@ -2,35 +2,46 @@
 
 const string Img256 = @"Resources\Nature1024.jpg";
 const string Img64 = @"Resources\Nature64.jpg";
-const int Times = 1;
+const int Times = 10;
+
+void WriteLog(string text, StreamWriter streamWriter)
+{
+	Console.WriteLine(text);
+	streamWriter.WriteLine(text);
+}
+
+long GetMiddle(List<long> values)
+{
+	var sum = values.Sum();
+	return sum / values.Count;
+}
 
 async Task StartTest(int bigPow, int smallPow, int times, StreamWriter streamWriter)
 {
-	Console.WriteLine($"Start test: Big size - 2^{bigPow}, 2^{bigPow}; Small size - 2^{smallPow}, 2^{smallPow}");
-	streamWriter.WriteLine($"Start test: Big size - 2^{bigPow}, 2^{bigPow}; Small size - 2^{smallPow}, 2^{smallPow}");
+	WriteLog($"Start test: Big size - 2^{bigPow}, 2^{bigPow}; Small size - 2^{smallPow}, 2^{smallPow}", streamWriter);
+	var timeWithoutPrepare = new List<long>();
+	var timeWithPrepare = new List<long>();
 	var threads = new[] {1, 2, 4, 8, 16};
 	foreach (var thread in threads)
 	{
 		for (var i = 0; i < times; i++)
 		{
-			Console.Write($"Treads count - {thread}; Times - {i}");
-			streamWriter.Write($"Treads count - {thread}; Times - {i}");
 			var bigCount = (int)Math.Pow(2, bigPow);
 			var smallCount = (int)Math.Pow(2, smallPow);
 			var data = new Data(bigCount, smallCount, i, thread);
 			await data.Start();
-			Console.Write($"; Without Prepare - {data.TimerWithoutPrepare.Elapsed}; With Prepare - {data.TimerWithPrepare.Elapsed}");
-			streamWriter.Write($"; Without Prepare - {data.TimerWithoutPrepare.Elapsed}; With Prepare - {data.TimerWithPrepare.Elapsed}");
-			Console.WriteLine();
-			streamWriter.WriteLine();
+
+			WriteLog($"Treads count - {thread}; Times - {i}; Without Prepare - {data.TimerWithoutPrepare.ElapsedMilliseconds}; With Prepare - {data.TimerWithPrepare.ElapsedMilliseconds}", streamWriter);
+
+			timeWithoutPrepare.Add(data.TimerWithoutPrepare.ElapsedMilliseconds);
+			timeWithPrepare.Add(data.TimerWithPrepare.ElapsedMilliseconds);
 		}
 
-		Console.WriteLine();
-		streamWriter.WriteLine();
+		WriteLog($"Middle Without Prepare - {GetMiddle(timeWithoutPrepare)}; With Prepare - {GetMiddle(timeWithPrepare)}", streamWriter);
+		WriteLog(string.Empty, streamWriter);
 	}
 
-	Console.WriteLine($"End test: Big size - 2^{bigPow}, 2^{bigPow}; Small size - 2^{smallPow}, 2^{smallPow}");
-	streamWriter.WriteLine($"End test: Big size - 2^{bigPow}, 2^{bigPow}; Small size - 2^{smallPow}, 2^{smallPow}");
+	WriteLog($"End test: Big size - 2^{bigPow}, 2^{bigPow}; Small size - 2^{smallPow}, 2^{smallPow}", streamWriter);
 }
 
 var img256 = BitmapManager.GetImage(Img256);
