@@ -44,7 +44,7 @@ public class Data
 
 	private void SaveResult()
 	{
-		var folderName = $"D:\\Labs\\Results2\\SB_{_bigCount}_SS_{_smallCount}_threads_{_threadsCount}_try_{_tryNumber}\\";
+		var folderName = $"D:\\Labs\\Results3\\SB_{_bigCount}_SS_{_smallCount}_threads_{_threadsCount}_try_{_tryNumber}\\";
 		if (!Directory.Exists(folderName))
 		{
 			Directory.CreateDirectory(folderName);
