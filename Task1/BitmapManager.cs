@@ -15,7 +15,7 @@ public static class BitmapManager
 		var height = b1.Height;
 		var width = b1.Width;
 
-		var colorMatrix = CreateColors(width, height);
+		var colorMatrix = CreateMatrix<Color>(width, height);
 		for (var i = 0; i < width; i++)
 		{
 			for (var j = 0; j < height; j++)
@@ -27,20 +27,20 @@ public static class BitmapManager
 		return colorMatrix;
 	}
 
-	public static Color[][] CreateColors(int width, int height)
+	public static T[][] CreateMatrix<T>(int width, int height)
 	{
-		var colorMatrix = new Color[width][];
+		var colorMatrix = new T[width][];
 		for (var i = 0; i < width; i++)
 		{
-			colorMatrix[i] = new Color[height];
+			colorMatrix[i] = new T[height];
 		}
 
 		return colorMatrix;
 	}
 
-	public static Color[][] CreateColors(Size size)
+	public static T[][] CreateMatrix<T>(Size size)
 	{
-		return CreateColors(size.Width, size.Height);
+		return CreateMatrix<T>(size.Width, size.Height);
 	}
 
 	public static void SaveImage(Color[][] colors)
