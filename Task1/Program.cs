@@ -2,12 +2,10 @@
 
 const string Img256 = @"Resources\Nature1024.jpg";
 const string Img64 = @"Resources\Nature64.jpg";
-const int Times = 10;
+const int Times = 1;
 
-async Task StartTest(int bigPow, int smallPow, int times)
+async Task StartTest(int bigPow, int smallPow, int times, StreamWriter streamWriter)
 {
-	var fileStream = File.Open("log.txt", FileMode.Append);
-	using var streamWriter = new StreamWriter(fileStream);
 	Console.WriteLine($"Start test: Big size - 2^{bigPow}, 2^{bigPow}; Small size - 2^{smallPow}, 2^{smallPow}");
 	streamWriter.WriteLine($"Start test: Big size - 2^{bigPow}, 2^{bigPow}; Small size - 2^{smallPow}, 2^{smallPow}");
 	var threads = new[] {1, 2, 4, 8, 16};
@@ -44,6 +42,8 @@ var result = await contrastMatrixImage.GetResult();
 
 BitmapManager.SaveImage(result);
 
-await StartTest(12,10,Times);
-await StartTest(12,9,Times);
-await StartTest(13,9,Times);
+var fileStream = File.Open("log.txt", FileMode.Create);
+await using var streamWriter = new StreamWriter(fileStream) { AutoFlush = true };
+await StartTest(12,10,Times, streamWriter);
+await StartTest(12, 9, Times, streamWriter);
+await StartTest(13,9,Times, streamWriter);
