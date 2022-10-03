@@ -53,19 +53,9 @@ public abstract class ContrastMatrixBase<T>
 		TimerWithPrepare.Start();
 		var threads = Split(threadsCount, difference);
 		TimerWithoutPrepare.Start();
-		foreach (var thread in threads)
-		{
-			thread.StartThread();
-		}
-
-		while (threads.Any(t=>t.IsAlive))
-		{
-			Thread.Sleep(10);
-		}
-
+		StartAndWait(threads);
 		TimerWithoutPrepare.Stop();
 		var partsResult = Merge(threads.Select(t=>t.Result));
-
 		TimerWithPrepare.Stop();
 		return partsResult.First();
 	}
@@ -98,9 +88,9 @@ public abstract class ContrastMatrixBase<T>
 			var newPartsResult = new List<T[][]>();
 			for (var i = 0; i < partsResult.Count - 1; i += 2)
 			{
-				var color1 = partsResult[i];
-				var color2 = partsResult[i + 1];
-				newPartsResult.Add(MergeMatrix(color1, color2));
+				var matrix1 = partsResult[i];
+				var matrix2 = partsResult[i + 1];
+				newPartsResult.Add(MergeMatrix(matrix1, matrix2));
 			}
 
 			_isWidthDevided = !_isWidthDevided;
@@ -130,7 +120,26 @@ public abstract class ContrastMatrixBase<T>
 			currentThread += 2;
 		}
 
-		return big.Select((t, i) => new ThreadUnit<T>(t, small[i], difference, GetPart)).ToList();
+		return big.Select((t, i) =>
+		{
+			var thread = new ThreadUnit<T>(() => GetPart(t, small[i], difference));
+			thread.StartThread();
+			return thread;
+		}).ToList();
+	}
+
+	private void StartAndWait(List<ThreadUnit<T>> threads)
+	{
+		foreach (var thread in threads)
+		{
+			thread.StartThread();
+		}
+
+		const int waitTime = 25;
+		while (threads.Any(t => t.IsAlive))
+		{
+			Thread.Sleep(waitTime);
+		}
 	}
 
 	private T[][] GetPart(T[][] bigMatrix, T[][] smallMatrix, int difference)
