@@ -16,7 +16,7 @@ long GetMiddle(List<long> values)
 	return sum / values.Count;
 }
 
-async Task StartTest(int bigPow, int smallPow, int times, StreamWriter streamWriter)
+void StartTest(int bigPow, int smallPow, int times, StreamWriter streamWriter)
 {
 	WriteLog($"Start test: Big size - 2^{bigPow}, 2^{bigPow}; Small size - 2^{smallPow}, 2^{smallPow}", streamWriter);
 	var timeWithoutPrepare = new List<long>();
@@ -29,7 +29,7 @@ async Task StartTest(int bigPow, int smallPow, int times, StreamWriter streamWri
 			var bigCount = (int)Math.Pow(2, bigPow);
 			var smallCount = (int)Math.Pow(2, smallPow);
 			var data = new Data(bigCount, smallCount, i, thread);
-			await data.Start();
+			data.Start();
 
 			WriteLog($"Treads count - {thread}; Times - {i}; Without Prepare - {data.TimerWithoutPrepare.ElapsedMilliseconds}; With Prepare - {data.TimerWithPrepare.ElapsedMilliseconds}", streamWriter);
 
@@ -39,6 +39,8 @@ async Task StartTest(int bigPow, int smallPow, int times, StreamWriter streamWri
 
 		WriteLog($"Middle Without Prepare - {GetMiddle(timeWithoutPrepare)}; With Prepare - {GetMiddle(timeWithPrepare)}", streamWriter);
 		WriteLog(string.Empty, streamWriter);
+		timeWithoutPrepare = new List<long>();
+		timeWithPrepare = new List<long>();
 	}
 
 	WriteLog($"End test: Big size - 2^{bigPow}, 2^{bigPow}; Small size - 2^{smallPow}, 2^{smallPow}", streamWriter);
@@ -49,12 +51,12 @@ var img64 = BitmapManager.GetImage(Img64);
 
 var contrastMatrixImage = new ContrastMatrixImage(img256, img64);
 
-var result = await contrastMatrixImage.GetResult();
+var result = contrastMatrixImage.GetResult();
 
 BitmapManager.SaveImage(result);
 
 var fileStream = File.Open("log.txt", FileMode.Create);
-await using var streamWriter = new StreamWriter(fileStream) { AutoFlush = true };
-await StartTest(12,10,Times, streamWriter);
-await StartTest(12, 9, Times, streamWriter);
-await StartTest(13,9,Times, streamWriter);
+using var streamWriter = new StreamWriter(fileStream) { AutoFlush = true };
+StartTest(12,10,Times, streamWriter);
+StartTest(12, 9, Times, streamWriter);
+StartTest(13,9,Times, streamWriter);

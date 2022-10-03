@@ -16,7 +16,7 @@ public abstract class ContrastMatrixBase<T>
 	public Stopwatch TimerWithoutPrepare { get; private set; }
 	public Stopwatch TimerWithPrepare { get; private set; }
 
-	public ContrastMatrixBase(T[][] bigMatrix, T[][] smallMatrix)
+	protected ContrastMatrixBase(T[][] bigMatrix, T[][] smallMatrix)
 	{
 		_bigMatrix = bigMatrix;
 		_bigMatrixSize = new Size(_bigMatrix.Length, _bigMatrix[0].Length);
@@ -33,7 +33,46 @@ public abstract class ContrastMatrixBase<T>
 		}
 	}
 
-	public async Task<T[][]> GetResult(int threadsCount = 1)
+	public T[][] GetResult(int threadsCount = 1)
+	{
+		Validate(threadsCount);
+
+		TimerWithoutPrepare = new Stopwatch();
+		TimerWithPrepare = new Stopwatch();
+		var difference = _bigMatrixSize.Width / _smallMatrixSize.Width;
+		if (threadsCount == 1)
+		{
+			TimerWithPrepare.Start();
+			TimerWithoutPrepare.Start();
+			var result = GetPart(_bigMatrix, _smallMatrix, difference);
+			TimerWithoutPrepare.Stop();
+			TimerWithPrepare.Stop();
+			return result;
+		}
+
+		TimerWithPrepare.Start();
+		var threads = Split(threadsCount, difference);
+		TimerWithoutPrepare.Start();
+		foreach (var thread in threads)
+		{
+			thread.StartThread();
+		}
+
+		while (threads.Any(t=>t.IsAlive))
+		{
+			Thread.Sleep(10);
+		}
+
+		TimerWithoutPrepare.Stop();
+		var partsResult = Merge(threads.Select(t=>t.Result));
+
+		TimerWithPrepare.Stop();
+		return partsResult.First();
+	}
+
+	protected abstract T GetDifference(T first, T second);
+	
+	private void Validate(int threadsCount)
 	{
 		if (threadsCount <= 0)
 		{
@@ -49,35 +88,11 @@ public abstract class ContrastMatrixBase<T>
 		{
 			throw new ArgumentException("Cannot to divide on threads Small Matrix");
 		}
-
-		TimerWithoutPrepare = new Stopwatch();
-		TimerWithPrepare = new Stopwatch();
-		var difference = _bigMatrixSize.Width / _smallMatrixSize.Width;
-		if (threadsCount == 1)
-		{
-			TimerWithPrepare.Start();
-			TimerWithoutPrepare.Start();
-			var result = await GetPart(_bigMatrix, _smallMatrix, difference);
-			TimerWithoutPrepare.Stop();
-			TimerWithPrepare.Stop();
-			return result;
-		}
-
-		TimerWithPrepare.Start();
-		var (big, small) = Split(threadsCount);
-		TimerWithoutPrepare.Start();
-		var countTasks = big.Select((t, i) => GetPart(t, small[i], difference));
-		Task.WaitAll(countTasks.ToArray());
-		TimerWithoutPrepare.Stop();
-		var partsResult = Merge(countTasks);
-
-		TimerWithPrepare.Stop();
-		return partsResult.First();
 	}
 
-	private List<T[][]> Merge(IEnumerable<Task<T[][]>> countTasks)
+	private List<T[][]> Merge(IEnumerable<T[][]> countTasks)
 	{
-		var partsResult = new List<T[][]>(countTasks.Select(t => t.Result));
+		var partsResult = new List<T[][]>(countTasks);
 		while (partsResult.Count != 1)
 		{
 			var newPartsResult = new List<T[][]>();
@@ -95,7 +110,7 @@ public abstract class ContrastMatrixBase<T>
 		return partsResult;
 	}
 
-	private (List<T[][]> Big, List<T[][]> Small) Split(int threadsCount)
+	private List<ThreadUnit<T>> Split(int threadsCount, int difference)
 	{
 		var big = new List<T[][]> { _bigMatrix };
 		var small = new List<T[][]> { _smallMatrix };
@@ -109,22 +124,16 @@ public abstract class ContrastMatrixBase<T>
 				newBig.AddRange(GetHalf(big[i]));
 				newSmall.AddRange(GetHalf(small[i]));
 			}
-
-			big = newBig;
-			small = newSmall;
-			currentThread += 2;
-
+			
 			big = newBig;
 			small = newSmall;
 			currentThread += 2;
 		}
 
-		return (big, small);
+		return big.Select((t, i) => new ThreadUnit<T>(t, small[i], difference, GetPart)).ToList();
 	}
 
-	protected abstract T GetDifference(T first, T second);
-
-	private async Task<T[][]> GetPart(T[][] bigMatrix, T[][] smallMatrix, int difference)
+	private T[][] GetPart(T[][] bigMatrix, T[][] smallMatrix, int difference)
 	{
 		var result = BitmapManager.CreateMatrix<T>(bigMatrix.Length, bigMatrix[0].Length);
 		for (var i = 0; i < smallMatrix.Length; i++)

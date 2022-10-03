@@ -36,9 +36,9 @@ public class Data
 		_contrastMatrixNumbers = new ContrastMatrixNumbers(_bigMatrix, _smallMatrix);
 	}
 
-	public async Task Start()
+	public void Start()
 	{
-		_result = await _contrastMatrixNumbers.GetResult(_threadsCount);
+		_result = _contrastMatrixNumbers.GetResult(_threadsCount);
 		SaveResult();
 	}
 
