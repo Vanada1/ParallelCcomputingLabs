@@ -39,7 +39,7 @@ public class Data
 	public void Start()
 	{
 		_result = _contrastMatrixNumbers.GetResult(_threadsCount);
-		SaveResult();
+		// SaveResult();
 	}
 
 	private void SaveResult()

@@ -4,10 +4,10 @@ const string Img256 = @"Resources\Nature1024.jpg";
 const string Img64 = @"Resources\Nature64.jpg";
 const int Times = 10;
 
-void WriteLog(string text, StreamWriter streamWriter)
+void WriteLog(string text, StreamWriter? streamWriter = null)
 {
 	Console.WriteLine(text);
-	streamWriter.WriteLine(text);
+	streamWriter?.WriteLine(text);
 }
 
 long GetMiddle(List<long> values)
@@ -16,7 +16,7 @@ long GetMiddle(List<long> values)
 	return sum / values.Count;
 }
 
-void StartTest(int bigPow, int smallPow, int times, StreamWriter streamWriter)
+void StartTest(int bigPow, int smallPow, int times, StreamWriter? streamWriter)
 {
 	WriteLog($"Start test: Big size - 2^{bigPow}, 2^{bigPow}; Small size - 2^{smallPow}, 2^{smallPow}", streamWriter);
 	var timeWithoutPrepare = new List<long>();
